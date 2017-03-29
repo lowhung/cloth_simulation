@@ -388,8 +388,12 @@ void cCloth::ApplyGravity(Eigen::VectorXd& out_F) const
 void cCloth::IntegrateForward(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-	// TODO (CPSC426): Implement forward euler to update the particle positions X and Velocites Y
+	// TODO (CPSC426): Implement forward euler to update the particle positions X and Velocites V
 	// updated state should be stored in out_X and out_V
+	Eigen::VectorXd out_dX, out_dV;
+		EvalDerivative(X, V, out_dX, out_dV);
+		out_X = X + timestep*out_dX;
+		out_V = V + timestep*out_dV;
 }
 
 void cCloth::IntegrateMidpoint(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
