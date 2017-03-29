@@ -388,24 +388,46 @@ void cCloth::ApplyGravity(Eigen::VectorXd& out_F) const
 void cCloth::IntegrateForward(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-	// TODO (CPSC426): Implement forward euler to update the particle positions X and Velocites V
-	// updated state should be stored in out_X and out_V
+
 	Eigen::VectorXd out_dX, out_dV;
-		EvalDerivative(X, V, out_dX, out_dV);
-		out_X = X + timestep*out_dX;
-		out_V = V + timestep*out_dV;
+	EvalDerivative(X, V, out_dX, out_dV);
+	out_X = X + timestep*out_dX;
+	out_V = V + timestep*out_dV;
 }
 
 void cCloth::IntegrateMidpoint(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 							Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-	// TODO (CPSC426): Implement midpoint method
+
+	Eigen::VectorXd out_dX, out_dV;
+	EvalDerivative(X, V, out_dX, out_dV);
+	EvalDerivative(X+(0.5*timestep*out_dX), V+(0.5*timestep*out_dV), out_dX, out_dV);
+	out_X = X + timestep*out_dX;
+	out_V = V + timestep*out_dV;
 }
 
 void cCloth::IntegrateTrapezoid(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-	// TODO (CPSC426): Implement trapezoid method
+	
+	Eigen::VectorXd out_dX, out_dV;
+	Eigen::VectorXd out_dX_two, out_dV_two;
+
+	// Inner chain + f(X_{i})
+	EvalDerivative(X, V, out_dX, out_dV);
+
+	// Outer product f(X_{i} +
+	EvalDerivative(X, V, out_dX_two, out_dV_two);
+
+	// f(X_{i} + hf(X_{i}))
+	EvalDerivative(X+(timestep*out_dX), V+(timestep*out_dV), out_dX, out_dV);
+
+	// f(X_{i}) + f(X_{i} + hf(X_{i})))
+	//EvalDerivative(out_dX_two+(timestep*out_dX), out_dV_two+(timestep*out_dV), out_dX, out_dV);
+
+	// X_{i} + 0.5 * timestep * [f(X_{i}) + f(X_{i} + f(X_{i} + hf(X_{i})))]
+	out_X = X + 0.5*timestep*(out_dX_two+out_dX);
+	out_V = V + 0.5*timestep*(out_dX_two+out_dV);
 }
 
 void cCloth::IntegrateImplicit(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
@@ -413,6 +435,9 @@ void cCloth::IntegrateImplicit(double timestep, const Eigen::VectorXd& X, const 
 {
 	// TODO (CPSC426): Implement implicit euler
 	BuildJacobian(X, V, mJ); // build Jacobian and store it in mJ
+	// (I - timestep*mJ))*deltaX_{i}= hf(X_{i})
+	// out_X = X + deltaX_{i}
+	// out_V = V + deltaV_{i}
 }
 
 void cCloth::EvalDerivative(const Eigen::VectorXd& X, const Eigen::VectorXd& V, Eigen::VectorXd& out_dX, Eigen::VectorXd& out_dV)
