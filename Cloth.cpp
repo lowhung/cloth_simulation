@@ -388,7 +388,7 @@ void cCloth::ApplyGravity(Eigen::VectorXd& out_F) const
 void cCloth::IntegrateForward(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-
+	// Fully Integrated
 	Eigen::VectorXd out_dX, out_dV;
 	EvalDerivative(X, V, out_dX, out_dV);
 	out_X = X + timestep*out_dX;
@@ -398,9 +398,10 @@ void cCloth::IntegrateForward(double timestep, const Eigen::VectorXd& X, const E
 void cCloth::IntegrateMidpoint(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 							Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-
+	// Fully Integrated
 	Eigen::VectorXd out_dX, out_dV;
 	EvalDerivative(X, V, out_dX, out_dV);
+	// out_X = X + timestep * f(X + timestep*0.5*f(X))
 	EvalDerivative(X+(0.5*timestep*out_dX), V+(0.5*timestep*out_dV), out_dX, out_dV);
 	out_X = X + timestep*out_dX;
 	out_V = V + timestep*out_dV;
@@ -420,24 +421,35 @@ void cCloth::IntegrateTrapezoid(double timestep, const Eigen::VectorXd& X, const
 	EvalDerivative(X, V, out_dX_two, out_dV_two);
 
 	// f(X_{i} + hf(X_{i}))
-	EvalDerivative(X+(timestep*out_dX), V+(timestep*out_dV), out_dX, out_dV);
+	EvalDerivative(X+(timestep*out_dX_two), V+(timestep*out_dV_two), out_dX, out_dV);
 
-	// f(X_{i}) + f(X_{i} + hf(X_{i})))
-	//EvalDerivative(out_dX_two+(timestep*out_dX), out_dV_two+(timestep*out_dV), out_dX, out_dV);
 
 	// X_{i} + 0.5 * timestep * [f(X_{i}) + f(X_{i} + f(X_{i} + hf(X_{i})))]
 	out_X = X + 0.5*timestep*(out_dX_two+out_dX);
-	out_V = V + 0.5*timestep*(out_dX_two+out_dV);
+	out_V = V + 0.5*timestep*(out_dV_two+out_dV);
 }
 
 void cCloth::IntegrateImplicit(double timestep, const Eigen::VectorXd& X, const Eigen::VectorXd& V,
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
-	// TODO (CPSC426): Implement implicit euler
+
+	Eigen::VectorXd delta_X, delta_V;
+	Eigen::MatrixXd identity = Eigen::MatrixXd::Identity(600, 600);
+	
 	BuildJacobian(X, V, mJ); // build Jacobian and store it in mJ
-	// (I - timestep*mJ))*deltaX_{i}= hf(X_{i})
-	// out_X = X + deltaX_{i}
-	// out_V = V + deltaV_{i}
+	mJ.makeCompressed();
+
+	
+	Eigen::VectorXd out_dX, out_dV;
+	EvalDerivative(X, V, out_dX, out_dV);
+
+	mSolver.analyzePattern(identity-(timestep*mJ));
+	mSolver.factorize(identity-(timestep*mJ));
+	delta_X = mSolver.solve(out_X-X); 
+	delta_V = mSolver.solve(out_V-V); 
+
+	out_X = X + timestep*(out_dX+(mJ*delta_X));
+	out_V = V + timestep*(out_dV+(mJ*delta_V));
 }
 
 void cCloth::EvalDerivative(const Eigen::VectorXd& X, const Eigen::VectorXd& V, Eigen::VectorXd& out_dX, Eigen::VectorXd& out_dV)
