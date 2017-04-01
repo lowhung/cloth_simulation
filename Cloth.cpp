@@ -433,25 +433,36 @@ void cCloth::IntegrateImplicit(double timestep, const Eigen::VectorXd& X, const 
 								Eigen::VectorXd& out_X, Eigen::VectorXd& out_V)
 {
 
-	Eigen::VectorXd delta_X, delta_V;
-	Eigen::MatrixXd identity(600, 600);
-	Eigen::SparseMatrix<double> linear_system;
-	identity.setIdentity();
+	Eigen::VectorXd delta_X(300);
+	Eigen::VectorXd delta_V(300);
+	Eigen::VectorXd y_Vector(600);
+	Eigen::VectorXd x_Vector(600);
+	Eigen::SparseMatrix<double> eye(600, 600);
+	
+	// Initialize our A 
+	Eigen::SparseMatrix<double> linear_system(600, 600);
+
+	eye.setIdentity();
 
 	BuildJacobian(X, V, mJ); // build Jacobian and store it in mJ
 	
-	//mJ.makeCompressed();
-	linear_system = identity - (timestep*mJ * X);
-	//linear_system.makeCompressed();
+	linear_system = eye - (timestep*mJ);
+	linear_system.makeCompressed();
 
+	// Calculate out_dX and out_dV
 	Eigen::VectorXd out_dX, out_dV;
 	EvalDerivative(X, V, out_dX, out_dV);
+
+	// y = [out_dX, out_dV]
+	y_Vector << out_dX, out_dV;
 
 	mSolver.analyzePattern(linear_system);
 	mSolver.factorize(linear_system);
 
-	delta_X = mSolver.solve(timestep*out_dX); 
-	delta_V = mSolver.solve(timestep*out_dV); 
+	x_Vector = mSolver.solve(timestep*y_Vector); 
+	
+	delta_X = x_Vector.head(300);
+	delta_V = x_Vector.tail(300);
 
 	out_X = X + delta_X;
 	out_V = V + delta_V;
