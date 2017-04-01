@@ -434,22 +434,27 @@ void cCloth::IntegrateImplicit(double timestep, const Eigen::VectorXd& X, const 
 {
 
 	Eigen::VectorXd delta_X, delta_V;
-	Eigen::MatrixXd identity = Eigen::MatrixXd::Identity(600, 600);
-	
-	BuildJacobian(X, V, mJ); // build Jacobian and store it in mJ
-	mJ.makeCompressed();
+	Eigen::MatrixXd identity(600, 600);
+	Eigen::SparseMatrix<double> linear_system;
+	identity.setIdentity();
 
+	BuildJacobian(X, V, mJ); // build Jacobian and store it in mJ
 	
+	//mJ.makeCompressed();
+	linear_system = identity - (timestep*mJ * X);
+	//linear_system.makeCompressed();
+
 	Eigen::VectorXd out_dX, out_dV;
 	EvalDerivative(X, V, out_dX, out_dV);
 
-	mSolver.analyzePattern(identity-(timestep*mJ));
-	mSolver.factorize(identity-(timestep*mJ));
-	delta_X = mSolver.solve(out_X-X); 
-	delta_V = mSolver.solve(out_V-V); 
+	mSolver.analyzePattern(linear_system);
+	mSolver.factorize(linear_system);
 
-	out_X = X + timestep*(out_dX+(mJ*delta_X));
-	out_V = V + timestep*(out_dV+(mJ*delta_V));
+	delta_X = mSolver.solve(timestep*out_dX); 
+	delta_V = mSolver.solve(timestep*out_dV); 
+
+	out_X = X + delta_X;
+	out_V = V + delta_V;
 }
 
 void cCloth::EvalDerivative(const Eigen::VectorXd& X, const Eigen::VectorXd& V, Eigen::VectorXd& out_dX, Eigen::VectorXd& out_dV)
