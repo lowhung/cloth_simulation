@@ -1,9 +1,15 @@
 
+-----------------
+# Cloth Simulation
+-----------------
+## About
+The following project simulates cloth movement with c-point, trapezoid, forward and backward euler implementations. Wind strength and cloth density can be changed as well. This project was done in C++. Most of the starter code can be attributed to Dr. Michael Van de Panne, along with his team. All movement implementations are done by myself, these can be found in Cloth.cpp. Follow the instructions below to install and run this program, have fun with it!
+
 -----------------------
  COMPILING CPSC426
 -----------------------
 
-Below are quick instructions for compiling with default options. 
+Below are quick instructions for compiling with default options.
 
 As with any graphics library you will need to make sure you already have the
 opengl libraries on you computer. For example on Ubuntu 14.04 you will want
@@ -30,11 +36,11 @@ Note: The build system uses [**premake4**](https://premake.github.io/download.ht
   	```make config=release64```
       - Depending on your preference for the type of build you want to perform you can build a debug version or a release version.
   4. All components are copied into the [x64|x32]/[Debug|Release]/ and lib/ directories.
-  
-     
+
+
 ### Mac OS X:
   For now, the process is similar to Linux/Unix.  
-  
+
   1. ```./premake4_macos gmake```
       - make sure you are in the ./ directory.
   2. ```make config=debug64```
@@ -42,13 +48,13 @@ Note: The build system uses [**premake4**](https://premake.github.io/download.ht
   	```make config=release64```
       - Depending on your preference for the type of build you want to perform you can build a debug version or a release version.
   4. All components are copied into the [x64|x32]/[Debug|Release]/ and lib/ directories.
-  
-  
+
+
   With OS X version
   10.4 or earlier, you may need to use an LD_LIBRARY_PATH environment
   variable for the executable to properly link with shared and dynamic
   libraries.
-  
+
   -----------------
   Running the CODE
   -----------------
@@ -59,8 +65,8 @@ You can run the code from inside Visual Studio or you can run it an MS-DOS promp
  ```
  .\ass1
  ```
- 
- 
+
+
 ### Linux/Unix/Mac
 You should run the code from ther terminal in the root directory of the project.  
  Example:  
@@ -105,7 +111,7 @@ Files that need to be modified for the assignment are marked with  (*)
 
 App.cpp
 	- launches NanoGUI and runs the main program loop
-	
+
 Curve.cpp (*)
 	- code for loading and evaluating a parametric curve
 	- the control points are specified by text files using the JSON format
@@ -148,29 +154,29 @@ The directory structure of this package is as follows:
  EIGEN DATA STRUCTURES
 ----------------------
 
-Eigen's basic data structures are vectors and matrices. These data stuctures can have different sizes 
+Eigen's basic data structures are vectors and matrices. These data stuctures can have different sizes
 and data types, the naming conventions are as follows:
 
 Vector<Size><Type>: a vector of length <Size> containing data of <Type>.
 
-Examples: 
+Examples:
 
 	Vector4d is a vector containing 4 doubles
 
 	Vector2f is a vector containing 2 floats
-	
+
 	Vector3i is a vector containing 3 integers
-	
+
 	VectorXd is a variable length vector containing doubles
-	
+
 	Matrix<Size><Type>: a square matrix that has <Size> rows and <Size> columns, containing data of <Type>
 
 	Eigen::SparseMatrix is a sparse matrix
 
 	Eigen::SparseLU is a solver for sparse matrices
 
-Examples: 
+Examples:
 
 	Matrix4d is a 4x4 matrix of doubles
 
-	MatrixXf is a variable size matrix (doesn't have to be square) containing floats
+	MatrixXf is a variable size matrix (doesn't have to be square) containing floatss
