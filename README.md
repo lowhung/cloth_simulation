@@ -3,7 +3,7 @@
 # Cloth Simulation
 -----------------
 ## About
-The following project simulates cloth movement with c-point, trapezoid, forward and backward euler implementations. Wind strength and cloth density can be changed as well. This project was done in C++. Follow the instructions below to install and run this program, have fun with it!
+The following project simulates cloth movement with c-point, trapezoid, forward and backward euler implementations. Wind strength and cloth density can be changed as well. This project was done in C++. A lot of this would not have been possible without Dr. Michael Van de Panne, and our TAs. All movement implementations are done by myself, these can be found in Cloth.cpp. Follow the instructions below to install and run this program, have fun with it!
 
 -----------------------
  COMPILING
